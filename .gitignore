@@ -1,0 +1,45 @@
+# Project
+.project
+.settings
+.vscode
+.idea
+
+# Dependencies
+vendor/
+vendors/
+
+# Coverage Reports
+reports/
+coverage.out
+coverage.html
+coverage.txt
+junitFormatReport.xml
+
+# Executable
+go-mux-jwt
+main
+
+# mac crap
+.DS_Store
+
+# livereload helper
+gin-bin
+
+# Logs
+logs
+
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+swag
+
+# Node Modules
+node_modules/
+package*.json
+
+# Openapi generation for connector endpoints. We don't need it as we're acting as a true proxy.
+docs/
+

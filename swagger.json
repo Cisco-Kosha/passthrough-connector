@@ -1,0 +1,879 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "contact": {
+      "email": "eti@cisco.io",
+      "name": "API Support"
+    },
+    "description": "This is a Kosha REST serice for exposing many freshdesk features as REST APIs with better consistency, observability etc",
+    "termsOfService": "http://swagger.io/terms/",
+    "title": "Freshdesk Connector API",
+    "version": "2.0"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/v1/account": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/models.Account"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "account"
+        ],
+        "description": "List account metadata",
+        "summary": "Get account detail"
+      }
+    },
+    "/api/v1/agents": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/models.Agent"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "agents"
+        ],
+        "description": "List all agents",
+        "summary": "Get freshdesk agents"
+      }
+    },
+    "/api/v1/groups": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/models.Group"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "groups"
+        ],
+        "description": "List all groups",
+        "summary": "Get groups detail"
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Enter query parameter e.g., query=priority:>2",
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/models.SearchResults"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "search"
+        ],
+        "description": "Search tickets by passing various query parameters",
+        "summary": "Search tickets"
+      }
+    },
+    "/api/v1/specification/list": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "specification"
+        ],
+        "description": "Get all environment variables that need to be supplied",
+        "summary": "Get details of the connector specification"
+      }
+    },
+    "/api/v1/specification/test": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/models.Account"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "specification"
+        ],
+        "description": "Check if domain account can be verified",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/models.Specification"
+              }
+            }
+          },
+          "description": "Enter api key and domain name properties"
+        },
+        "summary": "Test if API key and domain name work against the specification"
+      }
+    },
+    "/api/v1/stats/agent/{agent_id}": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Enter agent id",
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/models.AllTickets"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "statistics"
+        ],
+        "description": "Get ticket statistics for a particular agent id",
+        "summary": "Get ticket statistics for a particular agent"
+      }
+    },
+    "/api/v1/stats/date/{created_at}": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Enter created_at",
+            "in": "path",
+            "name": "created_at",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/models.AllTickets"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "statistics"
+        ],
+        "description": "Get ticket statistics for tickets created since a particular date",
+        "summary": "Get ticket statistics for tickets created since a particular date"
+      }
+    },
+    "/api/v1/stats/group/{group_id}": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Enter group id",
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/models.AllTickets"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "statistics"
+        ],
+        "description": "Get ticket statistics for a particular group id",
+        "summary": "Get ticket statistics for a particular group"
+      }
+    },
+    "/api/v1/tickets": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/models.Ticket"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "tickets"
+        ],
+        "description": "List all tickets logged in the system",
+        "summary": "Get all tickets"
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "tickets"
+        ],
+        "description": "Create single ticket in the system",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/models.Ticket"
+              }
+            }
+          },
+          "description": "Enter ticket properties"
+        },
+        "summary": "Create new ticket"
+      }
+    },
+    "/api/v1/tickets/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "description": "Enter ticket id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "tickets"
+        ],
+        "description": "Delete single ticket based on the ticket id logged in the system",
+        "summary": "Delete single ticket"
+      },
+      "get": {
+        "parameters": [
+          {
+            "description": "Enter ticket id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/models.Ticket"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "tickets"
+        ],
+        "description": "List single ticket based on the ticket id logged in the system",
+        "summary": "Get single ticket"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "models.Account": {
+        "properties": {
+          "account_domain": {
+            "type": "string"
+          },
+          "account_id": {
+            "type": "integer"
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "address": {
+            "properties": {
+              "city": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "postalcode": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "street": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "bundle_id": {},
+          "contact_person": {
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "firstname": {
+                "type": "string"
+              },
+              "lastname": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "data_center": {
+            "type": "string"
+          },
+          "hipaa_compliant": {
+            "type": "boolean"
+          },
+          "organisation_id": {
+            "type": "integer"
+          },
+          "organisation_name": {
+            "type": "string"
+          },
+          "tier_type": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "total_agents": {
+            "properties": {
+              "collaborators": {
+                "type": "integer"
+              },
+              "field_service": {
+                "type": "integer"
+              },
+              "full_time": {
+                "type": "integer"
+              },
+              "occasional": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "models.Agent": {
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "available_since": {
+            "type": "string"
+          },
+          "contact": {
+            "properties": {
+              "active": {
+                "type": "boolean"
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "job_title": {
+                "type": "string"
+              },
+              "language": {
+                "type": "string"
+              },
+              "last_login_at": {},
+              "mobile": {},
+              "name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "time_zone": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "last_active_at": {
+            "type": "string"
+          },
+          "occasional": {
+            "type": "boolean"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "ticket_scope": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "models.AllTickets": {
+        "properties": {
+          "closed_tickets": {
+            "$ref": "#/components/schemas/models.ClosedTickets"
+          },
+          "open_tickets": {
+            "$ref": "#/components/schemas/models.OpenTickets"
+          },
+          "pending_tickets": {
+            "$ref": "#/components/schemas/models.PendingTickets"
+          },
+          "resolved_tickets": {
+            "$ref": "#/components/schemas/models.ResolvedTickets"
+          }
+        },
+        "type": "object"
+      },
+      "models.ClosedTickets": {
+        "properties": {
+          "tickets": {
+            "items": {
+              "$ref": "#/components/schemas/models.Ticket"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "models.Group": {
+        "properties": {
+          "agent_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "allow_agents_to_change_availability": {
+            "type": "boolean"
+          },
+          "automatic_agent_assignment": {
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "business_calendar_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "escalate_to": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "unassigned_for": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "models.OpenTickets": {
+        "properties": {
+          "tickets": {
+            "items": {
+              "$ref": "#/components/schemas/models.Ticket"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "models.PendingTickets": {
+        "properties": {
+          "tickets": {
+            "items": {
+              "$ref": "#/components/schemas/models.Ticket"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "models.ResolvedTickets": {
+        "properties": {
+          "tickets": {
+            "items": {
+              "$ref": "#/components/schemas/models.Ticket"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "models.SearchResults": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/models.Ticket"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "models.Specification": {
+        "properties": {
+          "api_key": {
+            "type": "string"
+          },
+          "domain_name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "models.Ticket": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "associated_tickets_count": {},
+          "association_type": {},
+          "attachments": {
+            "items": {},
+            "type": "array"
+          },
+          "cc_emails": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "company": {
+            "type": "object"
+          },
+          "company_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "custom_fields": {
+            "type": "object"
+          },
+          "description": {
+            "type": "string"
+          },
+          "description_text": {
+            "type": "string"
+          },
+          "due_by": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "email_config_id": {
+            "type": "integer"
+          },
+          "fr_due_by": {
+            "type": "string"
+          },
+          "fr_escalated": {
+            "type": "boolean"
+          },
+          "fwd_emails": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "group_id": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "is_escalated": {
+            "type": "boolean"
+          },
+          "nr_due_by": {},
+          "nr_escalated": {
+            "type": "boolean"
+          },
+          "priority": {},
+          "product_id": {
+            "type": "integer"
+          },
+          "reply_cc_emails": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "requester": {
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer"
+              },
+              "mobile": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "requester_id": {
+            "type": "integer"
+          },
+          "responder_id": {
+            "type": "integer"
+          },
+          "source": {},
+          "source_additional_info": {},
+          "spam": {
+            "type": "boolean"
+          },
+          "stats": {
+            "properties": {
+              "agent_responded_at": {},
+              "closed_at": {},
+              "first_responded_at": {},
+              "pending_since": {},
+              "reopened_at": {},
+              "requester_responded_at": {},
+              "resolved_at": {},
+              "status_updated_at": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "status": {},
+          "subject": {
+            "type": "string"
+          },
+          "support_email": {},
+          "ticket_cc_emails": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "to_emails": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "twitter_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}
