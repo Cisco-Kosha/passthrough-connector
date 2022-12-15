@@ -10,7 +10,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	_ "github.com/kosha/passthrough-connector/docs"
 	"github.com/kosha/passthrough-connector/pkg/app"
 	"github.com/kosha/passthrough-connector/pkg/logger"
 )
