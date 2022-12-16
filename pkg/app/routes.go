@@ -13,7 +13,7 @@ const (
 	BasicAuth = "BASIC_AUTH"
 )
 
-func (a *App) commonMiddleware(next http.Handler) http.Handler {
+func (a *App) commonMiddleware() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		//Allow CORS here By * or specific origin
@@ -90,8 +90,8 @@ func (a *App) commonMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (a *App) initializeRoutes() {
-	a.Router.PathPrefix("/").Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+func (a *App) InitializeRoutes() {
+	a.Router.PathPrefix("/").Handler(a.commonMiddleware()).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 
 	// Swagger
 	a.Router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)

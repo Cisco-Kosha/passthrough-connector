@@ -40,7 +40,6 @@ func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request) ([]by
 	}
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("hello: ", bodyBytes)
 	return bodyBytes, resp.StatusCode
 }
 

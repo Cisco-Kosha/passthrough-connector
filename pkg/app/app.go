@@ -55,10 +55,6 @@ func (a *App) Initialize(log logger.Logger) {
 	//}
 
 	a.Router = router()
-	a.Router.Use(a.commonMiddleware)
-
-	a.initializeRoutes()
-
 }
 
 // Run starts the app and serves on the specified addr
