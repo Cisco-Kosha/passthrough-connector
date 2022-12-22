@@ -14,6 +14,8 @@ type Config struct {
 	username         string
 	password         string
 	authType         string
+	ikey             string
+	sKey             string
 }
 
 func Get() *Config {
@@ -23,6 +25,9 @@ func Get() *Config {
 	flag.StringVar(&conf.authType, "authType", os.Getenv("AUTH_TYPE"), "Auth Type")
 	flag.StringVar(&conf.apiKeyHeaderName, "apiKeyHeaderName", os.Getenv("API_KEY_HEADER_NAME"), "API Key Header Name")
 	flag.StringVar(&conf.apiKey, "apiKey", os.Getenv("API_KEY"), "API Key")
+	flag.StringVar(&conf.apiKeyHeaderName, "ikey", os.Getenv("IKEY"), "Duo Security IKey")
+	flag.StringVar(&conf.apiKey, "Duo_SKEY", os.Getenv("SKEY"), "Duo Security SKey")
+
 	flag.StringVar(&conf.serverUrl, "serverUrl", os.Getenv("SERVER_URL"), "Server Url")
 
 	flag.Parse()
@@ -52,6 +57,10 @@ func (c *Config) GetAuthType() string {
 
 func (c *Config) GetUsernameAndPassword() (string, string) {
 	return c.username, c.password
+}
+
+func (c *Config) GetDuoIKeyAndSKey() (string, string) {
+	return c.ikey, c.sKey
 }
 
 func (c *Config) GetServerURL() string {

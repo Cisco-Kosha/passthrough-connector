@@ -2,15 +2,18 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/kosha/passthrough-connector/pkg/httpclient"
-	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/kosha/passthrough-connector/pkg/httpclient"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 const (
 	ApiKey    = "API_KEY"
 	BasicAuth = "BASIC_AUTH"
+	HMAC      = "HMAC"
 )
 
 func (a *App) commonMiddleware() http.Handler {
@@ -76,6 +79,20 @@ func (a *App) commonMiddleware() http.Handler {
 			username, password := a.Cfg.GetUsernameAndPassword()
 
 			res, statusCode, err := httpclient.MakeHttpBasicAuthCall(headers, username, password, method, serverUrl, c)
+			if err != nil {
+				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
+				respondWithError(w, statusCode, err.Error())
+				return
+			}
+			respondWithJSON(w, statusCode, res)
+			return
+		case HMAC:
+			ikey, skey := a.Cfg.GetDuoIKeyAndSKey()
+			currentTime := time.Now().UTC().Format(time.RFC1123Z)
+			headers := make(map[string]string)
+			headers["Authorization"] = sign(ikey, skey, method, a.Cfg.GetServerURL(), r.RequestURI, currentTime, r.URL.Query())
+			headers["Date"] = currentTime
+			res, statusCode, err := httpclient.MakeSignedHttpDuoCall(headers, method, a.Cfg.GetServerURL(), r.RequestURI, c)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())

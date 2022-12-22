@@ -1,10 +1,17 @@
 package app
 
 import (
+	"crypto/hmac"
+	"crypto/sha512"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
@@ -49,4 +56,47 @@ func getPageRange(r *http.Request, numPages int) (int, int, error) {
 	}
 
 	return pageStart, pageEnd, nil
+}
+
+var spaceReplacer *strings.Replacer = strings.NewReplacer("+", "%20")
+
+func canonParams(params url.Values) string {
+	// Values must be in sorted order
+	for key, val := range params {
+		sort.Strings(val)
+		params[key] = val
+	}
+	// Encode will place Keys in sorted order
+	ordered_params := params.Encode()
+	// Encoder turns spaces into +, but we need %XX escaping
+	return spaceReplacer.Replace(ordered_params)
+}
+
+func canonicalize(method string,
+	host string,
+	uri string,
+	params url.Values,
+	date string) string {
+	var canon [5]string
+	canon[0] = date
+	canon[1] = strings.ToUpper(method)
+	canon[2] = strings.ToLower(host)
+	canon[3] = uri
+	canon[4] = canonParams(params)
+	return strings.Join(canon[:], "\n")
+}
+
+func sign(ikey string,
+	skey string,
+	method string,
+	host string,
+	uri string,
+	date string,
+	params url.Values) string {
+	canon := canonicalize(method, host, uri, params, date)
+	mac := hmac.New(sha512.New, []byte(skey))
+	mac.Write([]byte(canon))
+	sig := hex.EncodeToString(mac.Sum(nil))
+	auth := ikey + ":" + sig
+	return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
 }
