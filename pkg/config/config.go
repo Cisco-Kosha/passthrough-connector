@@ -25,7 +25,7 @@ func Get() *Config {
 	flag.StringVar(&conf.authType, "authType", os.Getenv("AUTH_TYPE"), "Auth Type")
 	flag.StringVar(&conf.apiKeyHeaderName, "apiKeyHeaderName", os.Getenv("API_KEY_HEADER_NAME"), "API Key Header Name")
 	flag.StringVar(&conf.apiKey, "apiKey", os.Getenv("API_KEY"), "API Key")
-	flag.StringVar(&conf.apiKeyHeaderName, "ikey", os.Getenv("IKEY"), "Duo Security IKey")
+	flag.StringVar(&conf.ikey, "ikey", os.Getenv("IKEY"), "Duo Security IKey")
 	flag.StringVar(&conf.apiKey, "Duo_SKEY", os.Getenv("SKEY"), "Duo Security SKey")
 
 	flag.StringVar(&conf.serverUrl, "serverUrl", os.Getenv("SERVER_URL"), "Server Url")
@@ -44,7 +44,7 @@ func (c *Config) GetApiKeyHeaderName() string {
 }
 
 // GetAuthType returns the auth type accepted by the server
-// Possible values include: API_KEY, BASIC_AUTH
+// Possible values include: API_KEY, BASIC_AUTH, HMAC
 func (c *Config) GetAuthType() string {
 	// convert all characters to upper case
 	authType := strings.ToUpper(c.authType)
