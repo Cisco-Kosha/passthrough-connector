@@ -26,8 +26,7 @@ func Get() *Config {
 	flag.StringVar(&conf.apiKeyHeaderName, "apiKeyHeaderName", os.Getenv("API_KEY_HEADER_NAME"), "API Key Header Name")
 	flag.StringVar(&conf.apiKey, "apiKey", os.Getenv("API_KEY"), "API Key")
 	flag.StringVar(&conf.ikey, "ikey", os.Getenv("IKEY"), "Duo Security IKey")
-	flag.StringVar(&conf.apiKey, "Duo_SKEY", os.Getenv("SKEY"), "Duo Security SKey")
-
+	flag.StringVar(&conf.sKey, "skey", os.Getenv("SKEY"), "Duo Security SKey")
 	flag.StringVar(&conf.serverUrl, "serverUrl", os.Getenv("SERVER_URL"), "Server Url")
 
 	flag.Parse()
