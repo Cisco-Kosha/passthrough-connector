@@ -113,8 +113,10 @@ func MakeSignedHttpDuoCall(headers map[string]string, method, host string, url s
 		req, _ = http.NewRequest(method, host+url, nil)
 	}
 
-	for k, v := range headers {
-		req.Header.Add(k, v)
+	if headers != nil {
+		for k, v := range headers {
+			req.Header.Add(k, v)
+		}
 	}
 
 	var response interface{}

@@ -90,7 +90,7 @@ func (a *App) commonMiddleware() http.Handler {
 			ikey, skey := a.Cfg.GetDuoIKeyAndSKey()
 			currentTime := time.Now().UTC().Format(time.RFC1123Z)
 			headers := make(map[string]string)
-			headers["Authorization"] = sign(ikey, skey, method, a.Cfg.GetServerURL(), r.URL.Path, currentTime, r.URL.Query())
+			headers["Authorization"] = sign(ikey, skey, method, a.Cfg.GetServerHost(), r.URL.Path, currentTime, r.URL.Query())
 			headers["Date"] = currentTime
 			res, statusCode, err := httpclient.MakeSignedHttpDuoCall(headers, method, a.Cfg.GetServerURL(), r.RequestURI, c)
 			if err != nil {
