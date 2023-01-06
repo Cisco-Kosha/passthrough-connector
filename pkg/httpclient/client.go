@@ -43,6 +43,17 @@ func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request) ([]by
 	return bodyBytes, resp.StatusCode
 }
 
+func makeSignedHttpDuoCall(req *http.Request) ([]byte, int) {
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, 0
+	}
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	return bodyBytes, resp.StatusCode
+}
+
 func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, method, url string, body interface{}) (interface{}, int, error) {
 
 	var req *http.Request
@@ -85,6 +96,32 @@ func MakeHttpBasicAuthCall(headers map[string]string, username, password, method
 	var response interface{}
 
 	res, statusCode := makeHttpBasicAuthReq(username, password, req)
+	if string(res) == "" {
+		return nil, statusCode, fmt.Errorf("nil")
+	}
+	// Convert response body to target struct
+	_ = json.Unmarshal(res, &response)
+	return response, statusCode, nil
+}
+
+func MakeSignedHttpDuoCall(headers map[string]string, method, host string, url string, body interface{}) (interface{}, int, error) {
+	var req *http.Request
+	if body != nil {
+		jsonReq, _ := json.Marshal(body)
+		req, _ = http.NewRequest(method, host+url, bytes.NewBuffer(jsonReq))
+	} else {
+		req, _ = http.NewRequest(method, host+url, nil)
+	}
+
+	if headers != nil {
+		for k, v := range headers {
+			req.Header.Add(k, v)
+		}
+	}
+
+	var response interface{}
+
+	res, statusCode := makeSignedHttpDuoCall(req)
 	if string(res) == "" {
 		return nil, statusCode, fmt.Errorf("nil")
 	}
