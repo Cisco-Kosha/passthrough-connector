@@ -24,6 +24,11 @@ func (a *App) commonMiddleware() http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "*")
 
+		if (*r).Method == "OPTIONS" {
+			w.WriteHeader(200)
+			return
+		}
+
 		serverUrl := a.Cfg.GetServerURL()
 		requestUri := r.RequestURI
 		method := r.Method
