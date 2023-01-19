@@ -30,7 +30,12 @@ func makeHttpBasicAuthReq(username, password string, req *http.Request) ([]byte,
 }
 
 func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request) ([]byte, int) {
-	req.Header.Add(apiKeyHeaderName, apiKey)
+	if apiKeyHeaderName != "" {
+		req.Header.Add(apiKeyHeaderName, apiKey)
+	} else {
+		// if there is no accompanying header name, assume it is the Authorization header that needs to be sent
+		req.Header.Add("Authorization", "Bearer "+apiKey)
+	}
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
