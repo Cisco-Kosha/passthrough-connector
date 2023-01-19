@@ -95,6 +95,7 @@ func (a *App) commonMiddleware() http.Handler {
 		case HMAC:
 			ikey, skey := a.Cfg.GetDuoIKeyAndSKey()
 			currentTime := time.Now().UTC().Format(time.RFC1123Z)
+			headers := make(map[string]string)
 			headers["Authorization"] = sign(ikey, skey, method, a.Cfg.GetServerHost(), r.URL.Path, currentTime, r.URL.Query())
 			headers["Date"] = currentTime
 			res, statusCode, err := httpclient.MakeSignedHttpDuoCall(headers, method, a.Cfg.GetServerURL(), r.RequestURI, c)
@@ -105,8 +106,6 @@ func (a *App) commonMiddleware() http.Handler {
 			}
 			respondWithJSON(w, statusCode, res)
 			return
-		case Oauth:
-
 		}
 
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
