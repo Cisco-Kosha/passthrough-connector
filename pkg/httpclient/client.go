@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -16,6 +17,9 @@ func basicAuth(username, password string) string {
 
 func makeHttpBasicAuthReq(username, password string, req *http.Request) ([]byte, int) {
 	req.Header.Add("Authorization", "Basic "+basicAuth(username, password))
+
+	req.Header.Set("Accept-Encoding", "identity")
+
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
@@ -36,6 +40,9 @@ func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request) ([]by
 		// if there is no accompanying header name, assume it is the Authorization header that needs to be sent
 		req.Header.Add("Authorization", "Bearer "+apiKey)
 	}
+
+	req.Header.Set("Accept-Encoding", "identity")
+
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
@@ -44,7 +51,7 @@ func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request) ([]by
 		return nil, 0
 	}
 	defer resp.Body.Close()
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	bodyBytes, _ := io.ReadAll(resp.Body)
 	return bodyBytes, resp.StatusCode
 }
 
@@ -68,7 +75,6 @@ func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, met
 	} else {
 		req, _ = http.NewRequest(method, url, nil)
 	}
-
 	for k, v := range headers {
 		req.Header.Add(k, v)
 	}
@@ -80,7 +86,10 @@ func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, met
 		return nil, statusCode, fmt.Errorf("nil")
 	}
 	// Convert response body to target struct
-	_ = json.Unmarshal(res, &response)
+	err := json.Unmarshal(res, &response)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return response, statusCode, nil
 }
 
