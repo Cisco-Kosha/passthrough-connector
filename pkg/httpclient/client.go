@@ -16,7 +16,7 @@ func basicAuth(username, password string) string {
 }
 
 func makeHttpBasicAuthReq(username, password string, req *http.Request) ([]byte, int) {
-	req.Header.Add("Authorization", "Basic "+basicAuth(username, password))
+	req.Header.Set("Authorization", "Basic "+basicAuth(username, password))
 
 	req.Header.Set("Accept-Encoding", "identity")
 
@@ -35,10 +35,10 @@ func makeHttpBasicAuthReq(username, password string, req *http.Request) ([]byte,
 
 func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request) ([]byte, int) {
 	if apiKeyHeaderName != "" {
-		req.Header.Add(apiKeyHeaderName, apiKey)
+		req.Header.Set(apiKeyHeaderName, apiKey)
 	} else {
 		// if there is no accompanying header name, assume it is the Authorization header that needs to be sent
-		req.Header.Add("Authorization", "Bearer "+apiKey)
+		req.Header.Set("Authorization", "Bearer "+apiKey)
 	}
 
 	req.Header.Set("Accept-Encoding", "identity")
