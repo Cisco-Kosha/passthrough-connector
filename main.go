@@ -94,7 +94,7 @@ func main() {
 	// Prometheus metrics endpoint
 	a.Router.HandleFunc("/metrics", promhttp.Handler().ServeHTTP)
 
-	a.InitializeRoutes()
+	a.InitializeRoutes(log)
 
 	log.Infof("Running passthrough-connector on port %d", port)
 	a.Run(fmt.Sprintf(":%d", port))

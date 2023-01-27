@@ -16,6 +16,9 @@ type Config struct {
 	authType         string
 	ikey             string
 	sKey             string
+	accessToken      string
+	refreshToken     string
+	expiresAt        string
 }
 
 func Get() *Config {
@@ -28,6 +31,9 @@ func Get() *Config {
 	flag.StringVar(&conf.ikey, "ikey", os.Getenv("IKEY"), "Duo Security IKey")
 	flag.StringVar(&conf.sKey, "skey", os.Getenv("SKEY"), "Duo Security SKey")
 	flag.StringVar(&conf.serverUrl, "serverUrl", os.Getenv("SERVER_URL"), "Server Url")
+	flag.StringVar(&conf.accessToken, "accessToken", os.Getenv("ACCESS_TOKEN"), "Oauth2 Access Token")
+	flag.StringVar(&conf.refreshToken, "refreshToken", os.Getenv("REFRESH_TOKEN"), "Oauth2 Refresh Token")
+	flag.StringVar(&conf.expiresAt, "expiresAt", os.Getenv("EXPIRES_AT"), "Oauth2 Expires At")
 
 	flag.Parse()
 
@@ -56,6 +62,18 @@ func (c *Config) GetAuthType() string {
 
 func (c *Config) GetUsernameAndPassword() (string, string) {
 	return c.username, c.password
+}
+
+func (c *Config) GetAccessToken() string {
+	return c.accessToken
+}
+
+func (c *Config) GetRefreshToken() string {
+	return c.refreshToken
+}
+
+func (c *Config) GetExpiresAt() string {
+	return c.expiresAt
 }
 
 func (c *Config) GetDuoIKeyAndSKey() (string, string) {

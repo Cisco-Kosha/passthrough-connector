@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/kosha/passthrough-connector/pkg/logger"
 	"net/http"
 	"strings"
 	"time"
@@ -17,7 +18,7 @@ const (
 	Oauth     = "OAUTH2"
 )
 
-func (a *App) commonMiddleware() http.Handler {
+func (a *App) commonMiddleware(log logger.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		//Allow CORS here By * or specific origin
@@ -73,22 +74,28 @@ func (a *App) commonMiddleware() http.Handler {
 			apiKeyHeaderName := a.Cfg.GetApiKeyHeaderName()
 			apiKey := a.Cfg.GetApiKey()
 
-			res, statusCode, err := httpclient.MakeHttpApiKeyCall(headers, apiKeyHeaderName, apiKey, method, serverUrl, c)
+			res, statusCode, err := httpclient.MakeHttpApiKeyCall(headers, apiKeyHeaderName, apiKey, method, serverUrl, c, log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if res == nil {
+				respondWithJSON(w, statusCode, res)
 			}
 			respondWithJSON(w, statusCode, res)
 			return
 		case BasicAuth:
 			username, password := a.Cfg.GetUsernameAndPassword()
 
-			res, statusCode, err := httpclient.MakeHttpBasicAuthCall(headers, username, password, method, serverUrl, c)
+			res, statusCode, err := httpclient.MakeHttpBasicAuthCall(headers, username, password, method, serverUrl, c, log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if res == nil {
+				respondWithJSON(w, statusCode, res)
 			}
 			respondWithJSON(w, statusCode, res)
 			return
@@ -98,11 +105,35 @@ func (a *App) commonMiddleware() http.Handler {
 			headers := make(map[string]string)
 			headers["Authorization"] = sign(ikey, skey, method, a.Cfg.GetServerHost(), r.URL.Path, currentTime, r.URL.Query())
 			headers["Date"] = currentTime
-			res, statusCode, err := httpclient.MakeSignedHttpDuoCall(headers, method, a.Cfg.GetServerURL(), r.RequestURI, c)
+			res, statusCode, err := httpclient.MakeSignedHttpDuoCall(headers, method, a.Cfg.GetServerURL(), r.RequestURI, c, log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if res == nil {
+				respondWithJSON(w, statusCode, res)
+			}
+			respondWithJSON(w, statusCode, res)
+			return
+		case Oauth:
+			accessToken := a.Cfg.GetAccessToken()
+			refreshToken := a.Cfg.GetRefreshToken()
+			expiresAt := a.Cfg.GetExpiresAt()
+
+			tokenMap := make(map[string]string)
+			tokenMap["access_token"] = accessToken
+			tokenMap["refresh_token"] = refreshToken
+			tokenMap["expires_at"] = expiresAt
+
+			res, statusCode, err := httpclient.MakeOAuth2ApiRequest(headers, serverUrl, method, c, tokenMap, log)
+			if err != nil {
+				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
+				respondWithError(w, statusCode, err.Error())
+				return
+			}
+			if res == nil {
+				respondWithJSON(w, statusCode, res)
 			}
 			respondWithJSON(w, statusCode, res)
 			return
@@ -113,8 +144,8 @@ func (a *App) commonMiddleware() http.Handler {
 	})
 }
 
-func (a *App) InitializeRoutes() {
-	a.Router.PathPrefix("/").Handler(a.commonMiddleware()).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+func (a *App) InitializeRoutes(log logger.Logger) {
+	a.Router.PathPrefix("/").Handler(a.commonMiddleware(log)).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 
 	// Swagger
 	a.Router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
