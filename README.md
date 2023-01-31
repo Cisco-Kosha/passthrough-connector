@@ -6,6 +6,8 @@ It currently supports 2 forms of authentication.
 
 1. Basic Auth (i.e., std username/password, sent via request headers)
 2. API Keys (sent via request headers)
+3. HMAC Authentication - https://en.wikipedia.org/wiki/HMAC
+4. OAuth2 - https://en.wikipedia.org/wiki/OAuth
 
 ![Passthrough](images/passthrough.jpg)
 
