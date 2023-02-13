@@ -113,7 +113,7 @@ func Oauth2ApiRequest(headers map[string]string, method, url string, data interf
 		return nil, 500
 	}
 	for k, v := range headers {
-		request.Header.Add(k, v)
+		request.Header.Set(k, v)
 	}
 	setOauth2Header(request, tokenMap)
 	response, err := client.Do(request)
@@ -161,7 +161,7 @@ func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, met
 		req, _ = http.NewRequest(method, url, nil)
 	}
 	for k, v := range headers {
-		req.Header.Add(k, v)
+		req.Header.Set(k, v)
 	}
 
 	var response interface{}
@@ -191,7 +191,7 @@ func MakeHttpBasicAuthCall(headers map[string]string, username, password, method
 	}
 
 	for k, v := range headers {
-		req.Header.Add(k, v)
+		req.Header.Set(k, v)
 	}
 
 	var response interface{}
@@ -221,7 +221,7 @@ func MakeSignedHttpDuoCall(headers map[string]string, method, host string, url s
 
 	if headers != nil {
 		for k, v := range headers {
-			req.Header.Add(k, v)
+			req.Header.Set(k, v)
 		}
 	}
 
