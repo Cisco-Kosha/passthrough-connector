@@ -99,3 +99,13 @@ func (c *Config) GetServerHost() string {
 		return u.Host
 	}
 }
+
+func (c *Config) GetServerPath() string {
+	c.serverUrl = strings.TrimSuffix(c.serverUrl, "/")
+	u, _ := url.Parse(c.serverUrl)
+	if u.Scheme == "" {
+		return u.Path
+	} else {
+		return u.Path
+	}
+}
