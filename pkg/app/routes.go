@@ -16,6 +16,7 @@ const (
 	BasicAuth = "BASIC_AUTH"
 	HMAC      = "HMAC"
 	Oauth     = "OAUTH2"
+	MERAKI    = "MERAKI"
 )
 
 func (a *App) commonMiddleware(log logger.Logger) http.Handler {
@@ -89,6 +90,20 @@ func (a *App) commonMiddleware(log logger.Logger) http.Handler {
 			username, password := a.Cfg.GetUsernameAndPassword()
 
 			res, statusCode, err := httpclient.MakeHttpBasicAuthCall(headers, username, password, method, serverUrl, c, log)
+			if err != nil {
+				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
+				respondWithError(w, statusCode, err.Error())
+				return
+			}
+			if res == nil {
+				respondWithJSON(w, statusCode, res)
+			}
+			respondWithJSON(w, statusCode, res)
+			return
+		case MERAKI:
+			apiKeyHeaderName := "X-Cisco-Meraki-API-Key"
+			apiKey := a.Cfg.GetApiKey()
+			res, statusCode, err := httpclient.MakeHttpApiKeyCall(headers, apiKeyHeaderName, apiKey, method, serverUrl, c, log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
