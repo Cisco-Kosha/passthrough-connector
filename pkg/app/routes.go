@@ -80,6 +80,9 @@ func (a *App) commonMiddleware() http.Handler {
 				respondWithError(w, statusCode, err.Error())
 				return
 			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
+			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
 			}
@@ -94,6 +97,9 @@ func (a *App) commonMiddleware() http.Handler {
 				respondWithError(w, statusCode, err.Error())
 				return
 			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
+			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
 			}
@@ -107,6 +113,9 @@ func (a *App) commonMiddleware() http.Handler {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
 			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
@@ -124,6 +133,9 @@ func (a *App) commonMiddleware() http.Handler {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
 			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
@@ -145,6 +157,9 @@ func (a *App) commonMiddleware() http.Handler {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
 			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
