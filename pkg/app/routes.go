@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/kosha/passthrough-connector/pkg/logger"
 	"net/http"
 	"strings"
 	"time"
@@ -19,7 +18,7 @@ const (
 	MERAKI    = "MERAKI"
 )
 
-func (a *App) commonMiddleware(log logger.Logger) http.Handler {
+func (a *App) commonMiddleware() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		//Allow CORS here By * or specific origin
@@ -75,11 +74,14 @@ func (a *App) commonMiddleware(log logger.Logger) http.Handler {
 			apiKeyHeaderName := a.Cfg.GetApiKeyHeaderName()
 			apiKey := a.Cfg.GetApiKey()
 
-			res, statusCode, err := httpclient.MakeHttpApiKeyCall(headers, apiKeyHeaderName, apiKey, method, serverUrl, c, log)
+			res, statusCode, err := httpclient.MakeHttpApiKeyCall(headers, apiKeyHeaderName, apiKey, method, serverUrl, c, a.Log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
 			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
@@ -89,11 +91,14 @@ func (a *App) commonMiddleware(log logger.Logger) http.Handler {
 		case BasicAuth:
 			username, password := a.Cfg.GetUsernameAndPassword()
 
-			res, statusCode, err := httpclient.MakeHttpBasicAuthCall(headers, username, password, method, serverUrl, c, log)
+			res, statusCode, err := httpclient.MakeHttpBasicAuthCall(headers, username, password, method, serverUrl, c, a.Log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
 			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
@@ -103,11 +108,14 @@ func (a *App) commonMiddleware(log logger.Logger) http.Handler {
 		case MERAKI:
 			apiKeyHeaderName := "X-Cisco-Meraki-API-Key"
 			apiKey := a.Cfg.GetApiKey()
-			res, statusCode, err := httpclient.MakeHttpApiKeyCall(headers, apiKeyHeaderName, apiKey, method, serverUrl, c, log)
+			res, statusCode, err := httpclient.MakeHttpApiKeyCall(headers, apiKeyHeaderName, apiKey, method, serverUrl, c, a.Log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
 			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
@@ -120,11 +128,14 @@ func (a *App) commonMiddleware(log logger.Logger) http.Handler {
 			headers := make(map[string]string)
 			headers["Authorization"] = sign(ikey, skey, method, a.Cfg.GetServerHost(), r.URL.Path, currentTime, r.URL.Query())
 			headers["Date"] = currentTime
-			res, statusCode, err := httpclient.MakeSignedHttpDuoCall(headers, method, a.Cfg.GetServerURL(), r.RequestURI, c, log)
+			res, statusCode, err := httpclient.MakeSignedHttpDuoCall(headers, method, a.Cfg.GetServerURL(), r.RequestURI, c, a.Log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
 			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
@@ -141,11 +152,14 @@ func (a *App) commonMiddleware(log logger.Logger) http.Handler {
 			tokenMap["refresh_token"] = refreshToken
 			tokenMap["expires_at"] = expiresAt
 
-			res, statusCode, err := httpclient.MakeOAuth2ApiRequest(headers, serverUrl, method, c, tokenMap, log)
+			res, statusCode, err := httpclient.MakeOAuth2ApiRequest(headers, serverUrl, method, c, tokenMap, a.Log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
 				respondWithError(w, statusCode, err.Error())
 				return
+			}
+			if (statusCode != 200) && (statusCode != 201) {
+				a.Log.Errorf("Http response has a non-successful status code of: %v", statusCode)
 			}
 			if res == nil {
 				respondWithJSON(w, statusCode, res)
@@ -159,8 +173,8 @@ func (a *App) commonMiddleware(log logger.Logger) http.Handler {
 	})
 }
 
-func (a *App) InitializeRoutes(log logger.Logger) {
-	a.Router.PathPrefix("/").Handler(a.commonMiddleware(log)).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+func (a *App) InitializeRoutes() {
+	a.Router.PathPrefix("/").Handler(a.commonMiddleware()).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 
 	// Swagger
 	a.Router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)

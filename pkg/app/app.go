@@ -1,11 +1,13 @@
 package app
 
 import (
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/kosha/passthrough-connector/pkg/config"
 	"github.com/kosha/passthrough-connector/pkg/logger"
 	"log"
 	"net/http"
+	"os"
 )
 
 type App struct {
@@ -53,11 +55,11 @@ func (a *App) Initialize(log logger.Logger) {
 	//	name
 	//	schema.Value.
 	//}
-
 	a.Router = router()
 }
 
 // Run starts the app and serves on the specified addr
 func (a *App) Run(addr string) {
-	log.Fatal(http.ListenAndServe(addr, a.Router))
+	loggedRouter := handlers.LoggingHandler(os.Stdout, a.Router)
+	log.Fatal(http.ListenAndServe(addr, loggedRouter))
 }
