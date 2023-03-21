@@ -58,7 +58,9 @@ func (a *App) commonMiddleware() http.Handler {
 				}
 				for _, value := range values {
 					if name != "" && value != "" {
-						headers[name] = value
+						if name != "user-agent" {
+							headers[name] = value
+						}
 					}
 				}
 			}

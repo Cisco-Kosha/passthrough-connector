@@ -161,7 +161,10 @@ func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, met
 		req, _ = http.NewRequest(method, url, nil)
 	}
 	for k, v := range headers {
-		req.Header.Add(k, v)
+		// remove user-agent header because discord doesn't like it?
+		if k != "User-Agent" {
+			req.Header.Add(k, v)
+		}
 	}
 
 	var response interface{}
