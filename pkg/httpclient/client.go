@@ -50,9 +50,6 @@ func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request, log l
 
 	client := &http.Client{}
 
-	fmt.Println(req.URL)
-	fmt.Println(req.Header)
-
 	resp, err := client.Do(req)
 
 	if err != nil {
