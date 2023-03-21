@@ -50,6 +50,9 @@ func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request, log l
 
 	client := &http.Client{}
 
+	fmt.Println(req.RequestURI)
+	fmt.Println(req.Header)
+
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -174,7 +177,7 @@ func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, met
 	err := json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
-		log.Error(err)
+		log.Error(response)
 		return nil, 500, err
 	}
 	return response, statusCode, nil
