@@ -24,6 +24,8 @@ type Config struct {
 
 func Get() *Config {
 	conf := &Config{}
+	// creating a new flagset everytime the get function is called allows for different flagsets to exist
+	// rather than a conflict to be created when generating a new config object (such as for tests)
 	flags := flag.NewFlagSet("Passthrough Flag Set", flag.PanicOnError)
 	flags.StringVar(&conf.username, "username", os.Getenv("USERNAME"), "Basic Auth username")
 	flags.StringVar(&conf.password, "password", os.Getenv("PASSWORD"), "Basic Auth password")

@@ -23,6 +23,7 @@ func (a *App) TestCommonMiddlewareApiKeyCustomHeader(t *testing.T) {
 		a.Log.Errorf("can't unmarshalling response %v, error is: ", response.Body, err)
 	}
 
+	// checks to see if the custom header has been added to the request
 	val, ok := responseMap["headers"].(map[string]interface{})["X-Test-Header"].(string); if !ok || val != "12345678" {
 		t.Errorf("request header does not contain proper default api key header")
 	}
@@ -44,6 +45,8 @@ func (a *App) TestCommonMiddlewareApiKeyDefaultHeader(t *testing.T) {
 		a.Log.Errorf("can't unmarshalling response %v, error is: ", response.Body, err)
 	}
 
+
+	// checks to see if the default header has been added to the request
 	val, ok := responseMap["headers"].(map[string]interface{})["X"].(string); if !ok || val != "12345678" {
 		t.Errorf("request header does not contain proper default api key header")
 	}
@@ -52,6 +55,7 @@ func (a *App) TestCommonMiddlewareApiKeyDefaultHeader(t *testing.T) {
 
 func (a *App) TestCommonMiddlewareBearerToken(t *testing.T) {
 	req, err := http.NewRequest("GET", "", nil)
+	// this uri checks for a request with a bearer token attached
 	req.RequestURI = "/bearer"
 	if err != nil {
 		t.Fatal(err)
@@ -61,6 +65,7 @@ func (a *App) TestCommonMiddlewareBearerToken(t *testing.T) {
 
 func (a *App) TestCommonMiddlewareBasicAuth(t *testing.T) {
 	req, err := http.NewRequest("GET", "", nil)
+	// this uri checks for a request with basic auth with a username of foo and password of bar
 	req.RequestURI = "/basic-auth/foo/bar"
 	if err != nil {
 		t.Fatal(err)
@@ -84,6 +89,7 @@ func (a *App) TestCommonMiddlewareHMAC(t *testing.T) {
 		a.Log.Errorf("can't unmarshalling response %v, error is: ", response.Body, err)
 	}
 
+	// checks to see if the date header has been added to the request
 	_, ok := responseMap["headers"].(map[string]interface{})["Date"].(string); if !ok {
 		t.Errorf("request header does not contain proper HMAC date header")
 	}
@@ -91,6 +97,7 @@ func (a *App) TestCommonMiddlewareHMAC(t *testing.T) {
 
 func (a *App) TestCommonMiddlewareOAuth(t *testing.T) {
 	req, err := http.NewRequest("GET", "", nil)
+	// oauth also adds a bearer token so this makes sure there are no issues and the token has been added
 	req.RequestURI = "/bearer"
 	if err != nil {
 		t.Fatal(err)
