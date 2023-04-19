@@ -42,9 +42,30 @@ func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request, log l
 	if apiKeyHeaderName != "" {
 		req.Header.Set(apiKeyHeaderName, apiKey)
 	} else {
-		// if there is no accompanying header name, assume it is the Authorization header that needs to be sent
-		req.Header.Set("Authorization", "Bearer "+apiKey)
+		// if there is no accompanying header name, assume there is no required header key value
+		req.Header.Set("X", apiKey)
 	}
+
+	req.Header.Set("Accept-Encoding", "identity")
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		log.Error(err)
+		return nil, 500
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Error(err)
+	}
+	return bodyBytes, resp.StatusCode
+}
+
+func makeHttpBearerTokenReq(bearerToken string, req *http.Request, log logger.Logger) ([]byte, int) {
+	req.Header.Set("Authorization", "Bearer "+bearerToken)
 
 	req.Header.Set("Accept-Encoding", "identity")
 
@@ -118,7 +139,6 @@ func Oauth2ApiRequest(headers map[string]string, method, url string, data interf
 	setOauth2Header(request, tokenMap)
 	response, err := client.Do(request)
 
-	fmt.Println(response.StatusCode)
 	if err != nil {
 		log.Error(err)
 		return nil, 500
@@ -178,6 +198,35 @@ func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, met
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(response)
+		return nil, 500, err
+	}
+	return response, statusCode, nil
+}
+
+func MakeHttpBearerTokenCall(headers map[string]string, bearerToken, method, url string, body interface{}, log logger.Logger) (interface{}, int, error) {
+
+	var req *http.Request
+	if body != nil {
+		jsonReq, _ := json.Marshal(body)
+		req, _ = http.NewRequest(method, url, bytes.NewBuffer(jsonReq))
+	} else {
+		req, _ = http.NewRequest(method, url, nil)
+	}
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
+
+	var response interface{}
+
+	res, statusCode := makeHttpBearerTokenReq(bearerToken, req, log)
+	if string(res) == "" {
+		return nil, statusCode, fmt.Errorf("nil")
+	}
+	//Convert response body to target struct
+	err := json.Unmarshal(res, &response)
+	if err != nil {
+		log.Error("Unable to parse response as json")
+		log.Error(err)
 		return nil, 500, err
 	}
 	return response, statusCode, nil

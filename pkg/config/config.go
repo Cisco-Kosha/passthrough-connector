@@ -10,6 +10,7 @@ import (
 type Config struct {
 	apiKey           string
 	apiKeyHeaderName string
+	bearerToken      string
 	serverUrl        string
 	username         string
 	password         string
@@ -23,19 +24,23 @@ type Config struct {
 
 func Get() *Config {
 	conf := &Config{}
-	flag.StringVar(&conf.username, "username", os.Getenv("USERNAME"), "Basic Auth username")
-	flag.StringVar(&conf.password, "password", os.Getenv("PASSWORD"), "Basic Auth password")
-	flag.StringVar(&conf.authType, "authType", os.Getenv("AUTH_TYPE"), "Auth Type")
-	flag.StringVar(&conf.apiKeyHeaderName, "apiKeyHeaderName", os.Getenv("API_KEY_HEADER_NAME"), "API Key Header Name")
-	flag.StringVar(&conf.apiKey, "apiKey", os.Getenv("API_KEY"), "API Key")
-	flag.StringVar(&conf.ikey, "ikey", os.Getenv("IKEY"), "Duo Security IKey")
-	flag.StringVar(&conf.sKey, "skey", os.Getenv("SKEY"), "Duo Security SKey")
-	flag.StringVar(&conf.serverUrl, "serverUrl", os.Getenv("SERVER_URL"), "Server Url")
-	flag.StringVar(&conf.accessToken, "accessToken", os.Getenv("ACCESS_TOKEN"), "Oauth2 Access Token")
-	flag.StringVar(&conf.refreshToken, "refreshToken", os.Getenv("REFRESH_TOKEN"), "Oauth2 Refresh Token")
-	flag.StringVar(&conf.expiresAt, "expiresAt", os.Getenv("EXPIRES_AT"), "Oauth2 Expires At")
+	flags := flag.NewFlagSet("Passthrough Flag Set", flag.PanicOnError)
+	flags.StringVar(&conf.username, "username", os.Getenv("USERNAME"), "Basic Auth username")
+	flags.StringVar(&conf.password, "password", os.Getenv("PASSWORD"), "Basic Auth password")
+	flags.StringVar(&conf.authType, "authType", os.Getenv("AUTH_TYPE"), "Auth Type")
+	flags.StringVar(&conf.apiKeyHeaderName, "apiKeyHeaderName", os.Getenv("API_KEY_HEADER_NAME"), "API Key Header Name")
+	flags.StringVar(&conf.apiKey, "apiKey", os.Getenv("API_KEY"), "API Key")
+	flags.StringVar(&conf.bearerToken, "bearerToken", os.Getenv("BEARER_TOKEN"), "Bearer Token")
+	flags.StringVar(&conf.ikey, "ikey", os.Getenv("IKEY"), "Duo Security IKey")
+	flags.StringVar(&conf.sKey, "skey", os.Getenv("SKEY"), "Duo Security SKey")
+	flags.StringVar(&conf.serverUrl, "serverUrl", os.Getenv("SERVER_URL"), "Server Url")
+	flags.StringVar(&conf.accessToken, "accessToken", os.Getenv("ACCESS_TOKEN"), "Oauth2 Access Token")
+	flags.StringVar(&conf.refreshToken, "refreshToken", os.Getenv("REFRESH_TOKEN"), "Oauth2 Refresh Token")
+	flags.StringVar(&conf.expiresAt, "expiresAt", os.Getenv("EXPIRES_AT"), "Oauth2 Expires At")
 
-	flag.Parse()
+	var arguments []string
+	arguments = append(arguments, "os.Environ")
+	flags.Parse(arguments)
 
 	return conf
 }
@@ -46,6 +51,10 @@ func (c *Config) GetApiKey() string {
 
 func (c *Config) GetApiKeyHeaderName() string {
 	return c.apiKeyHeaderName
+}
+
+func (c *Config) GetBearerToken() string {
+	return c.bearerToken
 }
 
 // GetAuthType returns the auth type accepted by the server
