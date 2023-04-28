@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	ApiKey    = "API_KEY"
-	BasicAuth = "BASIC_AUTH"
-	HMAC      = "HMAC"
-	Oauth     = "OAUTH2"
-	MERAKI    = "MERAKI"
+	ApiKey      = "API_KEY"
+	BearerToken = "BEARER_TOKEN"
+	BasicAuth   = "BASIC_AUTH"
+	HMAC        = "HMAC"
+	Oauth       = "OAUTH2"
 )
 
 func (a *App) commonMiddleware() http.Handler {
@@ -35,18 +35,20 @@ func (a *App) commonMiddleware() http.Handler {
 		requestUri := r.RequestURI
 		method := r.Method
 		queryParams := r.URL.Query().Encode()
-
 		var contentTypeHeaderFound bool
 
 		serverUrl += requestUri
+
 		if queryParams != "" && !strings.Contains(requestUri, "?") {
 			serverUrl += "?" + queryParams
 		}
 
 		var c interface{}
-		decoder := json.NewDecoder(r.Body)
-		_ = decoder.Decode(&c)
-		defer r.Body.Close()
+		if r.Body != nil {
+			decoder := json.NewDecoder(r.Body)
+			_ = decoder.Decode(&c)
+			defer r.Body.Close()
+		}
 
 		headers := make(map[string]string)
 		// Loop over header names
@@ -85,8 +87,19 @@ func (a *App) commonMiddleware() http.Handler {
 			if (statusCode != 200) && (statusCode != 201) && res != nil {
 				a.Log.Errorf("Http response has a non-successful status code of %v with body %v", statusCode, res)
 			}
-			if res == nil {
-				respondWithJSON(w, statusCode, res)
+			respondWithJSON(w, statusCode, res)
+			return
+		case BearerToken:
+			bearerToken := a.Cfg.GetBearerToken()
+
+			res, statusCode, err := httpclient.MakeHttpBearerTokenCall(headers, bearerToken, method, serverUrl, c, a.Log)
+			if err != nil {
+				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
+				respondWithError(w, statusCode, err.Error())
+				return
+			}
+			if (statusCode != 200) && (statusCode != 201) && res != nil {
+				a.Log.Errorf("Http response has a non-successful status code of %v with body %v", statusCode, res)
 			}
 			respondWithJSON(w, statusCode, res)
 			return
@@ -101,26 +114,6 @@ func (a *App) commonMiddleware() http.Handler {
 			}
 			if (statusCode != 200) && (statusCode != 201) && res != nil {
 				a.Log.Errorf("Http response has a non-successful status code of %v with body %v", statusCode, res)
-			}
-			if res == nil {
-				respondWithJSON(w, statusCode, res)
-			}
-			respondWithJSON(w, statusCode, res)
-			return
-		case MERAKI:
-			apiKeyHeaderName := "X-Cisco-Meraki-API-Key"
-			apiKey := a.Cfg.GetApiKey()
-			res, statusCode, err := httpclient.MakeHttpApiKeyCall(headers, apiKeyHeaderName, apiKey, method, serverUrl, c, a.Log)
-			if err != nil {
-				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
-				respondWithError(w, statusCode, err.Error())
-				return
-			}
-			if (statusCode != 200) && (statusCode != 201) && res != nil {
-				a.Log.Errorf("Http response has a non-successful status code of %v with body %v", statusCode, res)
-			}
-			if res == nil {
-				respondWithJSON(w, statusCode, res)
 			}
 			respondWithJSON(w, statusCode, res)
 			return
@@ -138,9 +131,6 @@ func (a *App) commonMiddleware() http.Handler {
 			}
 			if (statusCode != 200) && (statusCode != 201) && res != nil {
 				a.Log.Errorf("Http response has a non-successful status code of %v with body %v", statusCode, res)
-			}
-			if res == nil {
-				respondWithJSON(w, statusCode, res)
 			}
 			respondWithJSON(w, statusCode, res)
 			return
@@ -162,9 +152,6 @@ func (a *App) commonMiddleware() http.Handler {
 			}
 			if (statusCode != 200) && (statusCode != 201) && res != nil {
 				a.Log.Errorf("Http response has a non-successful status code of %v with body %v", statusCode, res)
-			}
-			if res == nil {
-				respondWithJSON(w, statusCode, res)
 			}
 			respondWithJSON(w, statusCode, res)
 			return
