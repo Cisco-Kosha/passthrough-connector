@@ -27,6 +27,19 @@ func TestMain(m *testing.M) {
 
 }
 
+func TestNoAuth(t *testing.T) {
+	t.Setenv("SERVER_URL", "http://httpbin.org")
+	t.Setenv("AUTH_TYPE", "NONE")
+
+	cfg := config.Get()
+	a := App {
+		r,
+		logging,
+		cfg,
+	}
+	a.TestCommonMiddlewareNoAuth(t)
+}
+
 func TestApiKeyAuthCustomHeader(t *testing.T) {
 	t.Setenv("SERVER_URL", "http://httpbin.org")
 	t.Setenv("AUTH_TYPE", "API_KEY")

@@ -16,6 +16,7 @@ const (
 	BasicAuth   = "BASIC_AUTH"
 	HMAC        = "HMAC"
 	Oauth       = "OAUTH2"
+	None        = "NONE"
 )
 
 func (a *App) commonMiddleware() http.Handler {
@@ -74,6 +75,18 @@ func (a *App) commonMiddleware() http.Handler {
 
 		authType := a.Cfg.GetAuthType()
 		switch authType {
+		case None:
+			res, statusCode, err := httpclient.MakeHttpNoAuthCall(headers, method, serverUrl, c, a.Log)
+			if err != nil {
+				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
+				respondWithError(w, statusCode, err.Error())
+				return
+			}
+			if (statusCode != 200) && (statusCode != 201) && res != nil {
+				a.Log.Errorf("Http response has a non-successful status code of %v with body %v", statusCode, res)
+			}
+			respondWithJSON(w, statusCode, res)
+			return
 		case ApiKey:
 			apiKeyHeaderName := a.Cfg.GetApiKeyHeaderName()
 			apiKey := a.Cfg.GetApiKey()

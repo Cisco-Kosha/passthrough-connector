@@ -17,6 +17,25 @@ func basicAuth(username, password string) string {
 	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
+func makeHttpNoAuthReq(req *http.Request, log logger.Logger) ([]byte, int) {
+	req.Header.Set("Accept-Encoding", "identity")
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		log.Error(err)
+		return nil, 500
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Error(err)
+	}
+	return bodyBytes, resp.StatusCode
+}
+
 func makeHttpBasicAuthReq(username, password string, req *http.Request, log logger.Logger) ([]byte, int) {
 	req.Header.Set("Authorization", "Basic "+basicAuth(username, password))
 
@@ -165,6 +184,37 @@ func MakeOAuth2ApiRequest(headers map[string]string, url, method string, data in
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
+		return nil, 500, err
+	}
+	return response, statusCode, nil
+
+}
+
+func MakeHttpNoAuthCall(headers map[string]string,method, url string, body interface{}, log logger.Logger) (interface{}, int, error) {
+	var req *http.Request
+	if body != nil {
+		jsonReq, _ := json.Marshal(body)
+		req, _ = http.NewRequest(method, url, bytes.NewBuffer(jsonReq))
+	} else {
+		req, _ = http.NewRequest(method, url, nil)
+	}
+	for k, v := range headers {
+		// remove user-agent header because discord doesn't like it?
+		if k != "User-Agent" {
+			req.Header.Add(k, v)
+		}
+	}
+	var response interface{}
+
+	res, statusCode := makeHttpNoAuthReq(req, log)
+	if string(res) == "" {
+		return nil, statusCode, fmt.Errorf("nil")
+	}
+	// Convert response body to target struct
+	err := json.Unmarshal(res, &response)
+	if err != nil {
+		log.Error("Unable to parse response as json")
+		log.Error(response)
 		return nil, 500, err
 	}
 	return response, statusCode, nil
