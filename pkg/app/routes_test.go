@@ -7,6 +7,17 @@ import (
 	"testing"
 )
 
+func (a *App) TestCommonMiddlewareNoAuth(t *testing.T) {
+	req, err := http.NewRequest("GET", "", nil)
+	req.RequestURI = "/headers"
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	a.executeTest(t, req)
+}
+
+
 func (a *App) TestCommonMiddlewareApiKeyCustomHeader(t *testing.T) {
 	req, err := http.NewRequest("GET", "", nil)
 	req.RequestURI = "/headers"
