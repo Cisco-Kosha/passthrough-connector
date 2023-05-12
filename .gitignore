@@ -43,3 +43,7 @@ package*.json
 # Openapi generation for connector endpoints. We don't need it as we're acting as a true proxy.
 docs/
 
+connector_spec.json
+openapi.json
+swagger.json
+
