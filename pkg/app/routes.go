@@ -75,7 +75,7 @@ func (a *App) commonMiddleware() http.Handler {
 
 		authType := a.Cfg.GetAuthType()
 		switch authType {
-		case None:
+		default:
 			res, statusCode, err := httpclient.MakeHttpNoAuthCall(headers, method, serverUrl, c, a.Log)
 			if err != nil {
 				a.Log.Errorf("Encountered an error while making a call: %v\n", err)
@@ -171,7 +171,7 @@ func (a *App) commonMiddleware() http.Handler {
 		}
 
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		respondWithJSON(w, http.StatusOK, "Hello world")
+		// respondWithJSON(w, http.StatusOK, "Hello world")
 	})
 }
 
