@@ -190,7 +190,7 @@ func MakeOAuth2ApiRequest(headers map[string]string, url, method string, data in
 
 }
 
-func MakeHttpNoAuthCall(headers map[string]string,method, url string, body interface{}, log logger.Logger) (interface{}, int, error) {
+func MakeHttpNoAuthCall(headers map[string]string, method, url string, body interface{}, log logger.Logger) (interface{}, int, error) {
 	var req *http.Request
 	if body != nil {
 		jsonReq, _ := json.Marshal(body)
@@ -214,8 +214,8 @@ func MakeHttpNoAuthCall(headers map[string]string,method, url string, body inter
 	err := json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
-		log.Error(response)
-		return nil, 500, err
+		log.Error(err)
+		return string(res), 200, nil
 	}
 	return response, statusCode, nil
 
@@ -247,8 +247,8 @@ func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, met
 	err := json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
-		log.Error(response)
-		return nil, 500, err
+		log.Error(err)
+		return string(res), 200, nil
 	}
 	return response, statusCode, nil
 }
@@ -307,7 +307,7 @@ func MakeHttpBasicAuthCall(headers map[string]string, username, password, method
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
-		return nil, 500, err
+		return string(res), 200, nil
 	}
 	return response, statusCode, nil
 }
@@ -338,7 +338,7 @@ func MakeSignedHttpDuoCall(headers map[string]string, method, host string, url s
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
-		return nil, 500, err
+		return string(res), 200, nil
 	}
 	return response, statusCode, nil
 }
