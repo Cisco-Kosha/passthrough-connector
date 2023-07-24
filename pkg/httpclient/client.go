@@ -17,7 +17,7 @@ func basicAuth(username, password string) string {
 	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
-func makeHttpNoAuthReq(req *http.Request, log logger.Logger) ([]byte, int) {
+func makeHttpNoAuthReq(req *http.Request, log logger.Logger) ([]byte, int, error) {
 	req.Header.Set("Accept-Encoding", "identity")
 
 	client := &http.Client{}
@@ -26,17 +26,17 @@ func makeHttpNoAuthReq(req *http.Request, log logger.Logger) ([]byte, int) {
 
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Error(err)
 	}
-	return bodyBytes, resp.StatusCode
+	return bodyBytes, resp.StatusCode, err
 }
 
-func makeHttpBasicAuthReq(username, password string, req *http.Request, log logger.Logger) ([]byte, int) {
+func makeHttpBasicAuthReq(username, password string, req *http.Request, log logger.Logger) ([]byte, int, error) {
 	req.Header.Set("Authorization", "Basic "+basicAuth(username, password))
 
 	req.Header.Set("Accept-Encoding", "identity")
@@ -47,17 +47,17 @@ func makeHttpBasicAuthReq(username, password string, req *http.Request, log logg
 
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Error(err)
 	}
-	return bodyBytes, resp.StatusCode
+	return bodyBytes, resp.StatusCode, err
 }
 
-func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request, log logger.Logger) ([]byte, int) {
+func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request, log logger.Logger) ([]byte, int, error) {
 	if apiKeyHeaderName != "" {
 		req.Header.Set(apiKeyHeaderName, apiKey)
 	} else {
@@ -73,17 +73,17 @@ func makeHttpApiKeyReq(apiKeyHeaderName, apiKey string, req *http.Request, log l
 
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Error(err)
 	}
-	return bodyBytes, resp.StatusCode
+	return bodyBytes, resp.StatusCode, err
 }
 
-func makeHttpBearerTokenReq(bearerToken string, req *http.Request, log logger.Logger) ([]byte, int) {
+func makeHttpBearerTokenReq(bearerToken string, req *http.Request, log logger.Logger) ([]byte, int, error) {
 	req.Header.Set("Authorization", "Bearer "+bearerToken)
 
 	req.Header.Set("Accept-Encoding", "identity")
@@ -94,30 +94,30 @@ func makeHttpBearerTokenReq(bearerToken string, req *http.Request, log logger.Lo
 
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Error(err)
 	}
-	return bodyBytes, resp.StatusCode
+	return bodyBytes, resp.StatusCode, err
 }
 
-func makeSignedHttpDuoCall(req *http.Request, log logger.Logger) ([]byte, int) {
+func makeSignedHttpDuoCall(req *http.Request, log logger.Logger) ([]byte, int, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
-	return bodyBytes, resp.StatusCode
+	return bodyBytes, resp.StatusCode, err
 }
 
 func setOauth2Header(newReq *http.Request, tokenMap map[string]string) {
@@ -130,7 +130,7 @@ func setOauth2Header(newReq *http.Request, tokenMap map[string]string) {
 	return
 }
 
-func Oauth2ApiRequest(headers map[string]string, method, url string, data interface{}, tokenMap map[string]string, log logger.Logger) ([]byte, int) {
+func Oauth2ApiRequest(headers map[string]string, method, url string, data interface{}, tokenMap map[string]string, log logger.Logger) ([]byte, int, error) {
 	var client = &http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -142,7 +142,7 @@ func Oauth2ApiRequest(headers map[string]string, method, url string, data interf
 		requestBody, err := json.Marshal(data)
 		if err != nil {
 			log.Error(err)
-			return nil, 500
+			return nil, 500, err
 		}
 		body = bytes.NewBuffer(requestBody)
 	}
@@ -150,7 +150,7 @@ func Oauth2ApiRequest(headers map[string]string, method, url string, data interf
 	request, err := http.NewRequest(method, url, body)
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
 	for k, v := range headers {
 		request.Header.Add(k, v)
@@ -160,27 +160,29 @@ func Oauth2ApiRequest(headers map[string]string, method, url string, data interf
 
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
 	defer response.Body.Close()
 	respBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error(err)
-		return nil, 500
+		return nil, 500, err
 	}
-	return respBody, response.StatusCode
+	return respBody, response.StatusCode, err
 }
 
 func MakeOAuth2ApiRequest(headers map[string]string, url, method string, data interface{}, tokenMap map[string]string, log logger.Logger) (interface{}, int, error) {
 	var response interface{}
 
-	res, statusCode := Oauth2ApiRequest(headers, method, url, data, tokenMap, log)
-
+	res, statusCode, err := Oauth2ApiRequest(headers, method, url, data, tokenMap, log)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	if string(res) == "" {
 		return nil, 500, fmt.Errorf("nil")
 	}
 	// Convert response body to target struct
-	err := json.Unmarshal(res, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
@@ -206,12 +208,15 @@ func MakeHttpNoAuthCall(headers map[string]string, method, url string, body inte
 	}
 	var response interface{}
 
-	res, statusCode := makeHttpNoAuthReq(req, log)
+	res, statusCode, err := makeHttpNoAuthReq(req, log)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	if string(res) == "" {
 		return nil, statusCode, fmt.Errorf("nil")
 	}
 	// Convert response body to target struct
-	err := json.Unmarshal(res, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
@@ -239,12 +244,15 @@ func MakeHttpApiKeyCall(headers map[string]string, apiKeyHeaderName, apiKey, met
 
 	var response interface{}
 
-	res, statusCode := makeHttpApiKeyReq(apiKeyHeaderName, apiKey, req, log)
+	res, statusCode, err := makeHttpApiKeyReq(apiKeyHeaderName, apiKey, req, log)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	if string(res) == "" {
 		return nil, statusCode, fmt.Errorf("nil")
 	}
 	// Convert response body to target struct
-	err := json.Unmarshal(res, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
@@ -268,12 +276,15 @@ func MakeHttpBearerTokenCall(headers map[string]string, bearerToken, method, url
 
 	var response interface{}
 
-	res, statusCode := makeHttpBearerTokenReq(bearerToken, req, log)
+	res, statusCode, err := makeHttpBearerTokenReq(bearerToken, req, log)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	if string(res) == "" {
 		return nil, statusCode, fmt.Errorf("nil")
 	}
 	//Convert response body to target struct
-	err := json.Unmarshal(res, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
@@ -298,12 +309,15 @@ func MakeHttpBasicAuthCall(headers map[string]string, username, password, method
 
 	var response interface{}
 
-	res, statusCode := makeHttpBasicAuthReq(username, password, req, log)
+	res, statusCode, err := makeHttpBasicAuthReq(username, password, req, log)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	if string(res) == "" {
 		return nil, statusCode, fmt.Errorf("nil")
 	}
 	// Convert response body to target struct
-	err := json.Unmarshal(res, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
@@ -329,12 +343,15 @@ func MakeSignedHttpDuoCall(headers map[string]string, method, host string, url s
 
 	var response interface{}
 
-	res, statusCode := makeSignedHttpDuoCall(req, log)
+	res, statusCode, err := makeSignedHttpDuoCall(req, log)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	if string(res) == "" {
 		return nil, statusCode, fmt.Errorf("nil")
 	}
 	// Convert response body to target struct
-	err := json.Unmarshal(res, &response)
+	err = json.Unmarshal(res, &response)
 	if err != nil {
 		log.Error("Unable to parse response as json")
 		log.Error(err)
