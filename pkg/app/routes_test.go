@@ -17,7 +17,6 @@ func (a *App) TestCommonMiddlewareNoAuth(t *testing.T) {
 	a.executeTest(t, req)
 }
 
-
 func (a *App) TestCommonMiddlewareApiKeyCustomHeader(t *testing.T) {
 	req, err := http.NewRequest("GET", "", nil)
 	req.RequestURI = "/headers"
@@ -35,7 +34,8 @@ func (a *App) TestCommonMiddlewareApiKeyCustomHeader(t *testing.T) {
 	}
 
 	// checks to see if the custom header has been added to the request
-	val, ok := responseMap["headers"].(map[string]interface{})["X-Test-Header"].(string); if !ok || val != "12345678" {
+	val, ok := responseMap["headers"].(map[string]interface{})["X-Test-Header"].([]interface{})
+	if !ok || val[0].(string) != "12345678" {
 		t.Errorf("request header does not contain proper default api key header")
 	}
 }
@@ -56,13 +56,12 @@ func (a *App) TestCommonMiddlewareApiKeyDefaultHeader(t *testing.T) {
 		a.Log.Errorf("can't unmarshalling response %v, error is: ", response.Body, err)
 	}
 
-
 	// checks to see if the default header has been added to the request
-	val, ok := responseMap["headers"].(map[string]interface{})["X"].(string); if !ok || val != "12345678" {
+	val, ok := responseMap["headers"].(map[string]interface{})["X"].([]interface{})
+	if !ok || val[0].(string) != "12345678" {
 		t.Errorf("request header does not contain proper default api key header")
 	}
 }
-
 
 func (a *App) TestCommonMiddlewareBearerToken(t *testing.T) {
 	req, err := http.NewRequest("GET", "", nil)
@@ -101,7 +100,8 @@ func (a *App) TestCommonMiddlewareHMAC(t *testing.T) {
 	}
 
 	// checks to see if the date header has been added to the request
-	_, ok := responseMap["headers"].(map[string]interface{})["Date"].(string); if !ok {
+	_, ok := responseMap["headers"].(map[string]interface{})["Date"].(string)
+	if !ok {
 		t.Errorf("request header does not contain proper HMAC date header")
 	}
 }
@@ -116,7 +116,7 @@ func (a *App) TestCommonMiddlewareOAuth(t *testing.T) {
 	a.executeTest(t, req)
 }
 
-func (a *App) executeTest(t *testing.T, req *http.Request) *httptest.ResponseRecorder{
+func (a *App) executeTest(t *testing.T, req *http.Request) *httptest.ResponseRecorder {
 	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 	rr := httptest.NewRecorder()
 	handler := a.commonMiddleware()
