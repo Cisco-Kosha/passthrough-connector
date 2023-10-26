@@ -7,6 +7,7 @@ RUN rm /build/go.sum
 RUN go mod tidy
 RUN go build -o passthrough-connector .
 FROM docker.io/alpine
+RUN apk add curl
 RUN adduser -S -D -H -h /app appuser
 USER appuser
 COPY --from=builder /build/passthrough-connector /app/
